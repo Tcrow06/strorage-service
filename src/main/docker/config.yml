@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    image: your-backend-image:latest
+    container_name: backend-container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/minio_storage_service
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      # Có thể thêm các biến môi trường khác nếu cần
+    depends_on:
+      - redis
+      - mysql
+    networks:
+      - shopapp-network
+
+  redis:
+    image: docker.io/redis:7.2.3
+    container_name: redis-container
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - shopapp-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=minio_storage_service
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - shopapp-network
+
+networks:
+  shopapp-network:
+    driver: bridge

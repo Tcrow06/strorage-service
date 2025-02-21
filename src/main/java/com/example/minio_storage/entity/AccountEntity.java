@@ -25,4 +25,9 @@ public class AccountEntity {
 
     @Column(columnDefinition = "TEXT")
     String avatar;
+
+    String email;
+
+    @Column(name = "is_active")
+    Integer isActive=0;
 }

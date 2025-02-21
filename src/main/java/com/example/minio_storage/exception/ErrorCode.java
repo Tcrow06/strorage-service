@@ -24,7 +24,10 @@ public enum ErrorCode {
 
     UNABLE_DOWNLOAD_FILE(1009,"Unable to download file", HttpStatus.BAD_REQUEST),
     UNABLE_UPLOAD_FILE(1010,"Unable to upload file", HttpStatus.BAD_REQUEST),
-    INVALID_FILE(1011,"File avatar not null",HttpStatus.BAD_REQUEST);
+    INVALID_FILE(1011,"File avatar not null",HttpStatus.BAD_REQUEST),
+    INVALID_CODE_OTP(1012,"Invalid OTP code", HttpStatus.BAD_REQUEST),
+    ERROR_CONFIRMED(1013,"Error confirmed", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1001, "Email existed", HttpStatus.BAD_REQUEST);
     int code;
     String message;
     HttpStatusCode statusCode;
