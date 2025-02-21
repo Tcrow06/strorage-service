@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: minio-storage
+  datasource:
+    url: "jdbc:mysql://localhost:3300/minio_storage_service"
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  port: 8080
+  servlet:
+    context-path: /minio
+
+
+integration:
+  minio:
+    access-key: admin
+    secret-key: admin@2024
+    url: http://localhost:9000
