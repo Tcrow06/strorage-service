@@ -24,7 +24,6 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-
                         //chỉ test không dùng oauth2
                         .requestMatchers("/api/v1/redis/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()

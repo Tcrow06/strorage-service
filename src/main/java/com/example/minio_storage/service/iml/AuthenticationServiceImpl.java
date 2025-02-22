@@ -1,6 +1,7 @@
 package com.example.minio_storage.service.iml;
 
 import com.example.minio_storage.common.utils.OtpGenerator;
+import com.example.minio_storage.constant.EnumAccountStatus;
 import com.example.minio_storage.dto.request.ActiveAccountRequest;
 import com.example.minio_storage.dto.request.RegisterAccountRequest;
 import com.example.minio_storage.dto.response.AccountResponse;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -55,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String body = "Hello " + request.getUsername() + ",\n\n"
                 + "Thank you for signing up at Tcrow.com. To activate your account, please use the following OTP code:\n\n"
                 + "🔒 Your OTP Code: " + otpCode + "\n\n"
-                + "This code is valid for the next 10 minutes. Please do not share this code with anyone.\n\n"
+                + "This code is valid for the next 3 minutes. Please do not share this code with anyone.\n\n"
                 + "If you did not request this, please ignore this email.\n\n"
                 + "Best regards,\n"
                 + "The Trcow Team";
@@ -67,14 +70,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String activeAccount(ActiveAccountRequest request) {
         String getOpt = (String) baseRedisService.get(emailService.getRedisKey(request.getEmail()));
-        if(getOpt==null || ! getOpt.equals(request.getOtpCode())){
+        AccountEntity acc = accountRepository.findByEmail(request.getEmail());
+        if(acc==null){
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+        if(getOpt==null){
+            String newOtp = OtpGenerator.generateOtp();
+            emailService.saveOtp(request.getEmail(),newOtp);
+            String subject = "🔑 New OTP for Your Tcrow Account";
+            String body = "Hello " + acc.getUsername() + ",\n\n"
+                    + "Your previous OTP has expired. We have generated a new OTP for you to complete your account verification.\n\n"
+                    + "🔒 Your New OTP Code: " + newOtp + "\n\n"
+                    + "This code is valid for the next 3 minutes. Please do not share this code with anyone.\n\n"
+                    + "If you did not request this, please ignore this email.\n\n"
+                    + "Best regards,\n"
+                    + "The Tcrow Team";
+            emailService.sendEmail(request.getEmail(),subject,body);
+            throw new AppException(ErrorCode.EXPIRED_OTP);
+        }
+        if(!getOpt.equals(request.getOtpCode())){
             throw new AppException(ErrorCode.INVALID_CODE_OTP);
         }
-        AccountEntity acc = accountRepository.findByEmail(request.getEmail());
-        if(acc.getIsActive().equals(1)){
+
+        if(acc.getStatus().equals(EnumAccountStatus.ACTIVE)){
             throw new AppException(ErrorCode.ERROR_CONFIRMED);
         }
-        acc.setIsActive(1);
+        acc.setStatus(EnumAccountStatus.ACTIVE);
         accountRepository.save(acc);
         return "Account active successfully.";
     }
@@ -85,17 +106,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if(account==null){
             throw  new AppException(ErrorCode.USER_NOT_EXISTED);
         }
-        if(account.getIsActive().equals(1)){
+        if(account.getStatus().equals(EnumAccountStatus.ACTIVE)){
             throw new AppException(ErrorCode.ERROR_CONFIRMED);
         }
         baseRedisService.delete(emailService.getRedisKey(request.getEmail()));
         String newOtp = OtpGenerator.generateOtp();
-        baseRedisService.set(emailService.getRedisKey(request.getEmail()),newOtp );
+        emailService.saveOtp(request.getEmail(), newOtp);
         String subject = "🔑 Resend OTP for Your Tcrow Account";
         String body = "Hello " + account.getUsername() + ",\n\n"
                 + "We noticed that you requested a new OTP to activate your account. Please find your new OTP code below:\n\n"
                 + "🔒 Your OTP Code: " + newOtp + "\n\n"
-                + "This code is valid for the next 10 minutes. Please do not share this code with anyone.\n\n"
+                + "This code is valid for the next 3 minutes. Please do not share this code with anyone.\n\n"
                 + "If you did not request this, please ignore this email.\n\n"
                 + "Best regards,\n"
                 + "The Tcrow Team";

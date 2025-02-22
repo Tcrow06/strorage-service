@@ -1,5 +1,6 @@
 package com.example.minio_storage.entity;
 
+import com.example.minio_storage.constant.EnumAccountStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -28,6 +29,6 @@ public class AccountEntity {
 
     String email;
 
-    @Column(name = "is_active")
-    Integer isActive=0;
+    @Enumerated(EnumType.STRING)
+    EnumAccountStatus status= EnumAccountStatus.UNVERIFIED;
 }

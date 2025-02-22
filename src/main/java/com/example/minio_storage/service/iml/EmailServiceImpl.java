@@ -8,7 +8,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ public class EmailServiceImpl implements EmailService {
     JavaMailSender javaMailSender;
     BaseRedisService baseRedisService;
     @Override
+    @Async
     public void sendEmail(String toEmail, String subject, String body) {
         SimpleMailMessage message  = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -41,7 +45,10 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void saveOtp(String email, String otp) {
-        baseRedisService.set(getRedisKey(email), otp);
+        String key = getRedisKey(email);
+        baseRedisService.delete(key);
+        baseRedisService.set(key, otp);
+        baseRedisService.setTimeToLive(key,3, TimeUnit.MINUTES);
     }
 
     @Override

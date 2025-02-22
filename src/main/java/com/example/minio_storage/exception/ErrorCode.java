@@ -27,7 +27,8 @@ public enum ErrorCode {
     INVALID_FILE(1011,"File avatar not null",HttpStatus.BAD_REQUEST),
     INVALID_CODE_OTP(1012,"Invalid OTP code", HttpStatus.BAD_REQUEST),
     ERROR_CONFIRMED(1013,"Error confirmed", HttpStatus.BAD_REQUEST),
-    EMAIL_EXISTED(1001, "Email existed", HttpStatus.BAD_REQUEST);
+    EXPIRED_OTP(1014,"Expired OTP code! Please check email", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1005, "Email existed", HttpStatus.BAD_REQUEST);
     int code;
     String message;
     HttpStatusCode statusCode;
